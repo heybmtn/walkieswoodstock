@@ -26,14 +26,21 @@
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
 
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
   body {
     margin: 0;
     font-family: "Poppins", system-ui, -apple-system, sans-serif;
     color: var(--body);
     background: var(--white);
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
     line-height: 1.6;
+    overflow-x: hidden;
   }
+
+  /* Offset anchor jumps so target headings clear the sticky header */
+  #top, #service, #how, #reviews, #area, #book { scroll-margin-top: 84px; }
 
   .wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
@@ -48,7 +55,7 @@
     font-size: 0.82rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent-ink);
     margin: 0 0 18px;
   }
 
@@ -91,7 +98,7 @@
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--line);
   }
-  .nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  .nav { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
 
   .logo { display: flex; flex-direction: column; line-height: 0.9; }
   .logo .mark {
@@ -176,9 +183,9 @@
     color: var(--white);
   }
   .card h3 { font-size: 1.5rem; margin-bottom: 14px; }
-  .card .price { font-weight: 700; color: var(--accent); font-size: 1rem; letter-spacing: 0.04em; }
+  .card .price { font-weight: 700; color: var(--accent-ink); font-size: 1rem; letter-spacing: 0.04em; }
   .card p { margin: 8px 0 22px; font-size: 0.98rem; }
-  .card .more { font-weight: 700; color: var(--ink); border-bottom: 2px solid var(--accent); padding-bottom: 2px; }
+  .card .more { display: inline-block; font-weight: 700; color: var(--ink); border-bottom: 2px solid var(--accent); padding: 6px 2px; }
 
   /* ---------- How it works ---------- */
   .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 56px; }
@@ -245,17 +252,28 @@
   /* ---------- Responsive ---------- */
   @media (max-width: 860px) {
     .cards, .steps, .quotes { grid-template-columns: 1fr; }
-    .nav-links { display: none; }
     .menu-pill { display: inline-flex; }
     .hero { padding: 64px 0 56px; }
     section { padding: 64px 0; }
+
+    /* Mobile nav becomes a dropdown toggled by the Menu button */
+    .nav-links {
+      position: absolute; top: calc(100% + 8px); right: 24px;
+      flex-direction: column; gap: 4px;
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(20,33,58,.16);
+      padding: 8px; min-width: 210px; display: none; z-index: 60;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links a { padding: 13px 14px; border-radius: 10px; font-size: 1rem; }
+    .nav-links a:hover, .nav-links a:focus-visible { background: var(--pill); color: var(--ink); }
   }
 
   /* ============ Accessibility widget ============ */
   .a11y-widget { font-family: "Poppins", system-ui, sans-serif; }
 
   .a11y-fab {
-    position: fixed; right: 24px; bottom: 24px; z-index: 100;
+    position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom, 24px)); z-index: 100;
     width: 58px; height: 58px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     background: var(--accent); color: #fff;
@@ -268,7 +286,7 @@
   .a11y-fab:active { transform: translate(4px,4px); box-shadow: 0 0 0 var(--ink); }
 
   .a11y-panel {
-    position: fixed; right: 24px; bottom: 92px; z-index: 110;
+    position: fixed; right: 24px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 110;
     width: min(360px, calc(100vw - 32px));
     max-height: min(80vh, 660px); overflow-y: auto;
     background: #fff; border: 1px solid var(--line);
@@ -495,16 +513,17 @@
         <span class="sub">Dog Walking</span>
       </a>
       <div class="nav-right">
-        <nav class="nav-links">
+        <nav class="nav-links" id="navLinks">
           <a href="#service">Service</a>
           <a href="#how">How it works</a>
           <a href="#reviews">Reviews</a>
           <a href="#area">Area</a>
+          <a href="#book">Book a walk</a>
         </nav>
         <a class="phone" href="tel:+447700900000" aria-label="Call Trot">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         </a>
-        <a class="menu-pill" href="#service">Menu</a>
+        <button class="menu-pill" id="navToggle" aria-expanded="false" aria-controls="navLinks">Menu</button>
       </div>
     </div>
   </header>
@@ -841,6 +860,26 @@
       items.forEach((el) => el.classList.add('in'));
     }
   </script>
+  <script>
+    // ===== Mobile nav dropdown =====
+    (function () {
+      const toggle = document.getElementById('navToggle');
+      const menu = document.getElementById('navLinks');
+      function close() { menu.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
+      function open()  { menu.classList.add('open');    toggle.setAttribute('aria-expanded', 'true');  }
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.contains('open') ? close() : open();
+      });
+      // Close after picking a destination, on outside tap, or Escape
+      menu.addEventListener('click', (e) => { if (e.target.tagName === 'A') close(); });
+      document.addEventListener('click', (e) => {
+        if (menu.classList.contains('open') && !menu.contains(e.target) && e.target !== toggle) close();
+      });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    })();
+  </script>
+
   <script>
     // ===== Accessibility widget =====
     (function () {
